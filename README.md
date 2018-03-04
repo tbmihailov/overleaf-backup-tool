@@ -36,8 +36,8 @@ your_backup_dir/
    ├── projects.json
 ```
 
-projects.json contain the metadata about the projects in Overleaf.
-Successfully backed up projects will not be downloaded again if they are not marked as changed in Overleaf.
+projects.json contains the metadata about the projects in Overleaf.
+Successfully backed up projects will not be downloaded again if they are not changed in Overleaf.
 
 ## Contribute
 

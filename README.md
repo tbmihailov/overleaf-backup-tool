@@ -6,7 +6,8 @@ Works with Python 3.+
 
 ```bash
 git clone https://github.com/tbmihailov/overleaf-backup-tool.git
-pip install -r requirements
+cd overleaf-backup-tool
+pip install -r requirements.txt
 ```
 
 ## Usage

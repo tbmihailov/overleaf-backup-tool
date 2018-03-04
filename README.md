@@ -16,7 +16,7 @@ python overleaf_backup.py backup_dir overleafuser@domain.com overleafpass
 ```
 
 ## How it works
-The tool logins with your e-mail and password that you are registered in Overleaf and downloads all projects under "active" and "archived" via git.
+The tool logins with your Overleaf username and password and downloads all projects under "active" and "archived" via git.
 
 You will find the cloned projects folders in backup_dir/git_backup/:
 

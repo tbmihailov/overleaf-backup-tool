@@ -20,7 +20,7 @@ OVERLEAF_PROJECTS_STATUS_TYPES = ["active", "starred", "archived", "trash"]
 class OverleafClient(object):
     def __init__(self, ):
 
-        self._url_signin = "https://www.overleaf.com//users/sign_in"
+        self._url_signin = "https://www.overleaf.com/login"
         self._dashboard_url = "https://www.overleaf.com/dash/"
 
         self._login_cookies = None
@@ -124,9 +124,9 @@ class OverleafClient(object):
         html_doc = r_signing_get.text
         soup = BeautifulSoup(html_doc, 'html.parser')
         authenticity_token = ""
-        for tag in soup.find_all("meta"):
-            if tag.get("name", None) == "csrf-token":
-                authenticity_token = tag.get("content", None)
+        for tag in soup.find_all("input"):
+            if tag.get("name", None) == "_csrf":
+                authenticity_token = tag.get("value", None)
                 break
 
         if len(authenticity_token) == 0:
@@ -135,22 +135,30 @@ class OverleafClient(object):
             raise Exception(err_msg)
 
         # form login data object
-        login_json = {"utf8": u"\u2713",
-                      "authenticity_token": authenticity_token,
-                      "user[email]": username,
-                      "user[password]": password,
-                      "user[remember_me]": 0,
+        login_json = {"_csrf": authenticity_token,
+                      "email": username,
+                      "password": password,
                       }
 
         r_signing_post = reqs.post(self._url_signin, data=login_json, timeout=5, headers=headers, cookies=r_signing_get.cookies)
 
-        login_cookies = None
-        if r_signing_post.status_code == 200:
-            login_cookies = r_signing_post.cookies
-            is_successfull = True
-        else:
-            err_msg = "Status code {0} when signing in {1} with user [{2}] and pass [{3}]. Can not continue..".format(r_signing_post.status_code, self._url_signin, username, "*" * len(password))
+        if not r_signing_post.status_code == 200:
+            err_msg = 'Status code {} when signing in {1} with user [{2}].'
+            msg = err_msg.format(r_signing_post.status_code, self.url_signin, email)
             raise Exception(err_msg)
+
+        try:
+            response = json.loads(r_signing_post.text)
+            if response['message']['type'] == 'error':
+                msg = 'Login failed: {}'
+                msg = msg.format(response['message']['text'])
+                raise ValueError(msg)
+        except json.JSONDecodeError:
+            # This happens when the login is successful because a HTML document
+            # is returned instead of some JSON.
+            pass
+        login_cookies = r_signing_post.cookies
+        is_successfull = True
 
         self._login_request_get = r_signing_get
         self._login_request_post = r_signing_post
